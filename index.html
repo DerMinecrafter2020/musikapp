@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioVault - Custom CSS</title>
+    <!-- Lucide Icons -->
+    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
+    
+    <!-- Link zur ausgelagerten CSS Datei -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <audio id="audio-player" class="hidden-view"></audio>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i data-lucide="check-circle" style="color: var(--accent); width: 20px; height: 20px;"></i>
+        <span id="toast-message">Erfolgreich!</span>
+    </div>
+
+    <!-- Mobile Topbar -->
+    <div class="mobile-topbar">
+        <div class="flex items-center" style="gap: 0.5rem;">
+           <div class="brand-icon"><i data-lucide="server" style="width: 16px; height: 16px;"></i></div>
+           <h1 style="font-weight: bold; font-size: 1.25rem;">AudioVault</h1>
+        </div>
+        <button class="btn-icon-only" onclick="toggleMobileMenu(true)">
+          <i data-lucide="menu" style="width: 28px; height: 28px;"></i>
+        </button>
+    </div>
+
+    <div class="app-layout">
+        
+        <div id="mobile-overlay" class="mobile-overlay hidden-view" onclick="toggleMobileMenu(false)"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+          <div class="brand">
+             <div class="brand-icon"><i data-lucide="server" style="width: 16px; height: 16px;"></i></div>
+             AudioVault
+             <button onclick="toggleMobileMenu(false)" class="btn-icon-only" style="margin-left: auto; display: none;" id="close-sidebar-btn">
+                <i data-lucide="x"></i>
+             </button>
+          </div>
+          
+          <div class="nav-section" id="nav-main"></div>
+          
+          <div class="nav-section">
+             <div class="nav-title">Bibliothek</div>
+             <div id="nav-library"></div>
+          </div>
+          
+          <div class="nav-section" style="margin-top: auto; margin-bottom: 0;" id="nav-bottom"></div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="main-scroll-area">
+          <div class="main-header-gradient"></div>
+
+          <div class="content-inner">
+            
+            <!-- VIEW: EINSTELLUNGEN -->
+            <div id="view-admin" class="hidden-view">
+                <h2>Einstellungen & WebDAV</h2>
+                
+                <div class="settings-card">
+                  <div class="settings-card-header">
+                    <i data-lucide="server" style="color: var(--accent);"></i>
+                    <h3 style="margin: 0;">WebDAV Storage Anbindung</h3>
+                  </div>
+                  
+                  <form id="form-settings">
+                    <div class="form-group">
+                      <label class="form-label">Server URL</label>
+                      <input type="url" id="input-url" class="input-field" placeholder="[https://dein-nas.local/remote.php/webdav/Musik](https://dein-nas.local/remote.php/webdav/Musik)" />
+                    </div>
+                    <div class="form-group form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                      <div>
+                        <label class="form-label">Benutzername</label>
+                        <div class="input-wrapper">
+                          <i data-lucide="user" class="input-icon"></i>
+                          <input type="text" id="input-username" class="input-field with-icon" />
+                        </div>
+                      </div>
+                      <div>
+                        <label class="form-label">Passwort</label>
+                        <div class="input-wrapper">
+                          <i data-lucide="lock" class="input-icon"></i>
+                          <input type="password" id="input-password" class="input-field with-icon" />
+                        </div>
+                      </div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                      <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save" style="width: 20px; height: 20px;"></i> In Datenbank speichern
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="settings-card">
+                  <h3 style="margin-bottom: 0.5rem;">Datenbank Synchronisation</h3>
+                  <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem;">Dein Backend durchsucht deinen WebDAV Server nach Musikdateien und aktualisiert die MySQL-Datenbank.</p>
+                  <div class="flex" style="gap: 1rem; flex-wrap: wrap;">
+                    <button id="btn-sync" onclick="handleSync()" type="button" class="btn btn-outline">
+                      <i data-lucide="refresh-cw" id="icon-sync" style="width: 20px; height: 20px;"></i> <span id="text-sync">Jetzt Synchronisieren</span>
+                    </button>
+                    <button onclick="handleDeleteAll()" type="button" class="btn btn-danger">
+                      <i data-lucide="trash-2" style="width: 20px; height: 20px;"></i> Datenbank leeren
+                    </button>
+                  </div>
+                </div>
+            </div>
+
+            <!-- VIEW: HOME -->
+            <div id="view-home">
+                <div class="flex items-center justify-between" style="margin-bottom: 2rem;">
+                  <h2 style="margin: 0;">Guten Abend</h2>
+                </div>
+                <h3>Deine MySQL Tracks</h3>
+                <div id="grid-home" class="w-full"></div>
+            </div>
+
+            <!-- VIEW: SEARCH -->
+            <div id="view-search" class="hidden-view">
+                <div style="margin-bottom: 2rem;">
+                  <div class="input-wrapper" style="max-width: 500px;">
+                    <i data-lucide="search" class="input-icon" style="left: 1.5rem; width: 24px; height: 24px;"></i>
+                    <input type="text" id="input-search" placeholder="Was möchtest du hören?" class="input-field" style="padding-left: 4rem; border-radius: 9999px; font-size: 1.1rem;" />
+                  </div>
+                </div>
+                <h3>Suchergebnisse</h3>
+                <div id="grid-search" class="w-full"></div>
+            </div>
+
+            <!-- VIEW: LIKED -->
+            <div id="view-liked" class="hidden-view">
+                <div class="flex items-end" style="gap: 1.5rem; margin-bottom: 2rem; margin-top: 1rem;">
+                  <div style="width: 150px; height: 150px; background: linear-gradient(135deg, #450af5, #8e8ee5); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i data-lucide="heart" style="width: 64px; height: 64px; color: white;" fill="currentColor"></i>
+                  </div>
+                  <div>
+                    <p style="font-size: 0.875rem; font-weight: bold; text-transform: uppercase; margin-bottom: 0.5rem;">Playlist</p>
+                    <h2 style="font-size: 3rem; margin-bottom: 0.5rem;">Lieblingssongs</h2>
+                    <p id="liked-count" style="color: var(--text-muted); font-weight: 500;">0 Songs</p>
+                  </div>
+                </div>
+                <div id="grid-liked" class="w-full"></div>
+            </div>
+
+          </div>
+        </main>
+    </div>
+
+    <!-- PLAYER BAR -->
+    <footer class="player-bar">
+        
+        <div class="mobile-progress-top">
+           <div id="progress-bar-mobile" class="mobile-progress-fill" style="width: 0%"></div>
+        </div>
+
+        <!-- Info -->
+        <div class="player-section player-left" id="player-info">
+            <div style="width: 56px; height: 56px; background: var(--bg-card-hover); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Leer</span>
+            </div>
+        </div>
+
+        <!-- Mobile Play Button -->
+        <div class="flex items-center" style="display: none;" id="mobile-play-wrapper">
+           <button onclick="togglePlay()" class="btn-icon-only" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+              <i data-lucide="play" id="btn-play-mobile" style="width: 24px; height: 24px;" fill="currentColor"></i>
+            </button>
+        </div>
+
+        <!-- Center Controls -->
+        <div class="player-section player-center">
+          <div class="player-controls">
+            <button class="player-btn" onclick="playPrev()"><i data-lucide="skip-back" style="width: 20px; height: 20px;"></i></button>
+            <button class="play-pause-circle" onclick="togglePlay()">
+              <i data-lucide="play" id="btn-play-desktop" style="width: 16px; height: 16px; margin-left: 2px;" fill="currentColor"></i>
+            </button>
+            <button class="player-btn" onclick="playNext()"><i data-lucide="skip-forward" style="width: 20px; height: 20px;"></i></button>
+          </div>
+          <div class="progress-container">
+            <span id="time-current">0:00</span>
+            <div class="progress-bar-bg">
+              <div id="progress-bar-desktop" class="progress-bar-fill" style="width: 0%"></div>
+              <div class="progress-bar-knob" id="progress-knob"></div>
+            </div>
+            <span id="time-total">0:00</span>
+          </div>
+        </div>
+
+        <!-- Volume -->
+        <div class="player-section player-right">
+          <i data-lucide="volume-2" style="color: var(--text-muted); width: 20px; height: 20px;"></i>
+          <div class="progress-bar-bg" style="width: 100px;">
+             <div class="progress-bar-fill" style="width: 70%; background: #fff;"></div>
+          </div>
+        </div>
+    </footer>
+
+    <!-- Verlinkung zur JS Datei -->
+    <script src="script.js"></script>
+</body>
+</html>
