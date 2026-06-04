@@ -202,10 +202,10 @@ function finishSync(msg) {
 
 async function handleDeleteAll() {
     if(!confirm("Wirklich alle löschen?")) return;
-    if (USE_DEMO_MODE) { state.songs = []; state.likedSongIds = []; state.currentSong = null; state.isPlaying = false; showToast("Geleert (Demo)"); updateUI(); return; }
+    if (USE_DEMO_MODE) { state.songs = []; state.likedSongIds = []; state.currentSong = null; state.isPlaying = false; clearInterval(progressInterval); showToast("Geleert (Demo)"); updateUI(); return; }
     try {
         const res = await fetch(`${API_URL}/songs/${state.user.id}`, { method: 'DELETE' });
-        if (res.ok) { state.songs = []; state.currentSong = null; state.isPlaying = false; showToast("Geleert"); updateUI(); }
+        if (res.ok) { state.songs = []; state.currentSong = null; state.isPlaying = false; clearInterval(progressInterval); showToast("Geleert"); updateUI(); }
     } catch(e) { showToast("Backend Fehler"); }
 }
 
@@ -224,7 +224,7 @@ async function handleLikeClick(event, songId) {
             else state.likedSongIds.push(songId);
             updateUI();
         }
-    } catch (error) {}
+    } catch (error) { showToast("Netzwerkfehler beim Liken"); }
 }
 
 function showToast(message) {
@@ -264,8 +264,15 @@ function playPrev() {
 function startProgressTimer() {
     clearInterval(progressInterval);
     progressInterval = setInterval(() => {
-        state.progress += 0.5;
-        if (state.progress >= 100) playNext(); else updatePlayerUIProgressOnly();
+        let totalSecs = 200; // Standardwert als Fallback
+        if (state.currentSong && state.currentSong.duration) {
+            const timeParts = state.currentSong.duration.split(':');
+            if (timeParts.length === 2) {
+                totalSecs = parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]);
+            }
+        }
+        state.progress += (100 / totalSecs);
+        if (state.progress >= 100) { state.progress = 100; playNext(); } else updatePlayerUIProgressOnly();
     }, 1000);
 }
 
