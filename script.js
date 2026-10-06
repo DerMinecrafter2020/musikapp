@@ -9,6 +9,17 @@ let state = {
 };
 let progressInterval = null;
 
+// 🛡️ Sentinel: Utility function to sanitize strings to prevent XSS
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
     setupNavigation();
@@ -136,7 +147,7 @@ function renderGrid(containerId, songsArray, emptyMessage) {
                 return `
                 <div class="song-card" onclick="playSpecificSong(${song.id})">
                     <div class="cover-container">
-                        <img src="${song.cover}" class="cover-image" />
+                        <img src="${escapeHTML(song.cover)}" class="cover-image" />
                         <button onclick="handleLikeClick(event, ${song.id})" class="btn-like-corner ${isLiked ? 'liked' : ''}">
                             <i data-lucide="heart" style="width: 16px; height: 16px;" ${isLiked ? 'fill="currentColor"' : ''}></i>
                         </button>
@@ -144,8 +155,9 @@ function renderGrid(containerId, songsArray, emptyMessage) {
                             <i data-lucide="${isPlaying ? 'pause' : 'play'}" style="width: 24px; height: 24px; ${isPlaying?'':'margin-left: 2px;'}" fill="currentColor"></i>
                         </button>
                     </div>
-                    <div class="song-title truncate">${song.title}</div>
-                    <div class="song-artist truncate">${song.artist}</div>
+                    <!-- 🛡️ Sentinel: Sanitize user-provided song title and artist to prevent XSS -->
+                    <div class="song-title truncate">${escapeHTML(song.title)}</div>
+                    <div class="song-artist truncate">${escapeHTML(song.artist)}</div>
                 </div>`;
             }).join('')}
         </div>`;
@@ -306,11 +318,12 @@ function updatePlayerUI() {
 
     if (state.currentSong) {
         const isLiked = state.likedSongIds.includes(state.currentSong.id);
+        // 🛡️ Sentinel: Sanitize current song info to prevent XSS in player UI
         infoContainer.innerHTML = `
-            <img src="${state.currentSong.cover}" class="player-cover" />
+            <img src="${escapeHTML(state.currentSong.cover)}" class="player-cover" />
             <div class="player-left" style="display:flex; flex-direction:column; justify-content:center;">
-                <div style="font-size:0.875rem; font-weight:bold; color:white;">${state.currentSong.title}</div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">${state.currentSong.artist}</div>
+                <div style="font-size:0.875rem; font-weight:bold; color:white;">${escapeHTML(state.currentSong.title)}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${escapeHTML(state.currentSong.artist)}</div>
             </div>
             <i data-lucide="heart" style="width:16px; height:16px; cursor:pointer; color:${isLiked ? 'var(--accent)' : 'var(--text-muted)'}; margin-left:1rem;" ${isLiked ? 'fill="currentColor"' : ''} onclick="handleLikeClick(event, ${state.currentSong.id})"></i>
         `;
